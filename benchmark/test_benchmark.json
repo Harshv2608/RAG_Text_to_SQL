@@ -1,0 +1,212 @@
+[
+  {
+    "question_id": "test_t1_0",
+    "tier": 1,
+    "question": "Find all events of type 'login'.",
+    "gold_sql": "SELECT * FROM events WHERE event_type = 'login';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_0",
+    "tier": 2,
+    "question": "Count the number of purchase events per country.",
+    "gold_sql": "SELECT u.country, COUNT(e.id) FROM events e JOIN users u ON e.user_id = u.id WHERE e.event_type = 'purchase' GROUP BY u.country;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_0",
+    "tier": 3,
+    "question": "Which users have both an Enterprise subscription and an event of type 'login'?",
+    "gold_sql": "SELECT u.id, u.full_name FROM users u WHERE u.id IN (SELECT user_id FROM subscriptions WHERE plan = 'Enterprise') AND u.id IN (SELECT user_id FROM events WHERE event_type = 'login');",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_1",
+    "tier": 1,
+    "question": "Find all events of type 'logout'.",
+    "gold_sql": "SELECT * FROM events WHERE event_type = 'logout';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_1",
+    "tier": 2,
+    "question": "What is the total payment amount by canceled subscriptions?",
+    "gold_sql": "SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN subscriptions s ON p.subscription_id = s.id WHERE s.status = 'canceled';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_1",
+    "tier": 3,
+    "question": "Find users whose total successful payment amount is exactly 0, and show their latest event type.",
+    "gold_sql": "WITH ZeroPayments AS (SELECT u.id as user_id FROM users u LEFT JOIN payments p ON u.id = p.user_id AND p.payment_status = 'success' GROUP BY u.id HAVING COALESCE(SUM(p.amount), 0) = 0), LatestEvents AS (SELECT user_id, event_type, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_time DESC) as rn FROM events) SELECT u.full_name, le.event_type FROM ZeroPayments zp JOIN users u ON zp.user_id = u.id JOIN LatestEvents le ON u.id = le.user_id WHERE le.rn = 1;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_2",
+    "tier": 1,
+    "question": "Find all events of type 'purchase'.",
+    "gold_sql": "SELECT * FROM events WHERE event_type = 'purchase';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_2",
+    "tier": 2,
+    "question": "How many users from DE have a Basic plan?",
+    "gold_sql": "SELECT COUNT(u.id) FROM users u JOIN subscriptions s ON u.id = s.user_id WHERE u.country = 'DE' AND s.plan = 'Basic';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_2",
+    "tier": 3,
+    "question": "List the top 5 users with the lowest total successful payment amounts (excluding 0).",
+    "gold_sql": "SELECT u.full_name, SUM(p.amount) as total_amount FROM users u JOIN payments p ON u.id = p.user_id WHERE p.payment_status = 'success' GROUP BY u.id, u.full_name HAVING SUM(p.amount) > 0 ORDER BY total_amount ASC LIMIT 5;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_3",
+    "tier": 1,
+    "question": "Find all events of type 'view_item'.",
+    "gold_sql": "SELECT * FROM events WHERE event_type = 'view_item';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_3",
+    "tier": 2,
+    "question": "List the countries and the total number of users in each.",
+    "gold_sql": "SELECT country, COUNT(*) FROM users GROUP BY country;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_3",
+    "tier": 3,
+    "question": "Find countries where the average successful payment amount is below 20.",
+    "gold_sql": "SELECT u.country FROM users u JOIN payments p ON u.id = p.user_id WHERE p.payment_status = 'success' GROUP BY u.country HAVING AVG(p.amount) < 20;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_4",
+    "tier": 1,
+    "question": "Find all events of type 'add_to_cart'.",
+    "gold_sql": "SELECT * FROM events WHERE event_type = 'add_to_cart';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_4",
+    "tier": 2,
+    "question": "Show the total amount of successful payments by currency.",
+    "gold_sql": "SELECT currency, COALESCE(SUM(amount), 0) FROM payments WHERE payment_status = 'success' GROUP BY currency;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_4",
+    "tier": 3,
+    "question": "What is the least common event type for users with a Pro plan?",
+    "gold_sql": "SELECT e.event_type, COUNT(*) as cnt FROM events e JOIN subscriptions s ON e.user_id = s.user_id WHERE s.plan = 'Pro' GROUP BY e.event_type ORDER BY cnt ASC LIMIT 1;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_5",
+    "tier": 1,
+    "question": "Find all events of type 'upgrade'.",
+    "gold_sql": "SELECT * FROM events WHERE event_type = 'upgrade';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_5",
+    "tier": 2,
+    "question": "Find the average payment amount for the Pro plan.",
+    "gold_sql": "SELECT COALESCE(AVG(p.amount), 0) FROM payments p JOIN subscriptions s ON p.subscription_id = s.id WHERE s.plan = 'Pro';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_5",
+    "tier": 3,
+    "question": "List the users who have no events logged.",
+    "gold_sql": "SELECT u.full_name FROM users u LEFT JOIN events e ON u.id = e.user_id WHERE e.id IS NULL;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_6",
+    "tier": 1,
+    "question": "List all Enterprise plan subscriptions.",
+    "gold_sql": "SELECT * FROM subscriptions WHERE plan = 'Enterprise';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_6",
+    "tier": 2,
+    "question": "List the emails of users who have an Enterprise plan.",
+    "gold_sql": "SELECT u.email FROM users u JOIN subscriptions s ON u.id = s.user_id WHERE s.plan = 'Enterprise';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_6",
+    "tier": 3,
+    "question": "Find the user with the most failed payments.",
+    "gold_sql": "SELECT u.full_name, COUNT(p.id) as fail_count FROM users u JOIN payments p ON u.id = p.user_id WHERE p.payment_status = 'failed' GROUP BY u.id, u.full_name ORDER BY fail_count DESC LIMIT 1;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_7",
+    "tier": 1,
+    "question": "List all active subscriptions.",
+    "gold_sql": "SELECT * FROM subscriptions WHERE status = 'active';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_7",
+    "tier": 2,
+    "question": "How many add_to_cart events occurred?",
+    "gold_sql": "SELECT COUNT(*) FROM events WHERE event_type = 'add_to_cart';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_7",
+    "tier": 3,
+    "question": "Show the percentage of canceled subscriptions by plan.",
+    "gold_sql": "WITH TotalCanceled AS (SELECT COUNT(*) as total FROM subscriptions WHERE status = 'canceled') SELECT s.plan, COUNT(*)*100.0/COALESCE((SELECT NULLIF(total, 0) FROM TotalCanceled LIMIT 1), 1) as percentage FROM subscriptions s WHERE s.status = 'canceled' GROUP BY s.plan;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_8",
+    "tier": 1,
+    "question": "List all canceled subscriptions.",
+    "gold_sql": "SELECT * FROM subscriptions WHERE status = 'canceled';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_8",
+    "tier": 2,
+    "question": "Get the names of users from FR who have a canceled subscription.",
+    "gold_sql": "SELECT u.full_name FROM users u JOIN subscriptions s ON u.id = s.user_id WHERE u.country = 'FR' AND s.status = 'canceled';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_8",
+    "tier": 3,
+    "question": "Identify users whose latest subscription is canceled.",
+    "gold_sql": "WITH RankedSubs AS (SELECT user_id, status, ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY started_at DESC) as rn FROM subscriptions) SELECT u.full_name FROM users u JOIN RankedSubs rs ON u.id = rs.user_id WHERE rs.rn = 1 AND rs.status = 'canceled';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t1_9",
+    "tier": 1,
+    "question": "List all failed payments.",
+    "gold_sql": "SELECT * FROM payments WHERE payment_status = 'failed';",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t2_9",
+    "tier": 2,
+    "question": "Count the number of logout events per user.",
+    "gold_sql": "SELECT user_id, COUNT(*) FROM events WHERE event_type = 'logout' GROUP BY user_id;",
+    "gold_result": "expected shape"
+  },
+  {
+    "question_id": "test_t3_9",
+    "tier": 3,
+    "question": "Find the total revenue generated from UK users overall.",
+    "gold_sql": "SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN users u ON p.user_id = u.id WHERE u.country = 'UK' AND p.payment_status = 'success';",
+    "gold_result": "expected shape"
+  }
+]

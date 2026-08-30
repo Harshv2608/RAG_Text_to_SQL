@@ -1,0 +1,212 @@
+[
+  {
+    "example_id": "train_t1_0",
+    "tier": 1,
+    "question": "Get all users from US.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'US';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_0",
+    "tier": 2,
+    "question": "How many successful payments exist per country?",
+    "gold_sql": "SELECT u.country, COUNT(p.id) FROM payments p JOIN users u ON p.user_id = u.id WHERE p.payment_status = 'success' GROUP BY u.country;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_0",
+    "tier": 3,
+    "question": "Which users have both a Pro subscription and an event of type 'upgrade'?",
+    "gold_sql": "SELECT u.id, u.full_name FROM users u WHERE u.id IN (SELECT user_id FROM subscriptions WHERE plan = 'Pro') AND u.id IN (SELECT user_id FROM events WHERE event_type = 'upgrade');",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_1",
+    "tier": 1,
+    "question": "Get all users from UK.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'UK';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_1",
+    "tier": 2,
+    "question": "What is the total amount of successful payments for US users?",
+    "gold_sql": "SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN users u ON p.user_id = u.id WHERE p.payment_status = 'success' AND u.country = 'US';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_1",
+    "tier": 3,
+    "question": "Find users whose total successful payment amount exceeds 100, and show their latest event type.",
+    "gold_sql": "WITH UserPayments AS (SELECT user_id, SUM(amount) as total FROM payments WHERE payment_status = 'success' GROUP BY user_id HAVING SUM(amount) > 100), LatestEvents AS (SELECT user_id, event_type, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_time DESC) as rn FROM events) SELECT u.full_name, le.event_type FROM UserPayments up JOIN users u ON up.user_id = u.id JOIN LatestEvents le ON u.id = le.user_id WHERE le.rn = 1;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_2",
+    "tier": 1,
+    "question": "Get all users from CA.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'CA';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_2",
+    "tier": 2,
+    "question": "How many active subscriptions are there for each plan?",
+    "gold_sql": "SELECT plan, COUNT(*) FROM subscriptions WHERE status = 'active' GROUP BY plan;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_2",
+    "tier": 3,
+    "question": "List the top 3 users with the highest total successful payment amounts.",
+    "gold_sql": "SELECT u.full_name, SUM(p.amount) as total_amount FROM users u JOIN payments p ON u.id = p.user_id WHERE p.payment_status = 'success' GROUP BY u.id, u.full_name ORDER BY total_amount DESC LIMIT 3;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_3",
+    "tier": 1,
+    "question": "Get all users from AU.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'AU';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_3",
+    "tier": 2,
+    "question": "List the emails of users who have a Pro plan.",
+    "gold_sql": "SELECT u.email FROM users u JOIN subscriptions s ON u.id = s.user_id WHERE s.plan = 'Pro';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_3",
+    "tier": 3,
+    "question": "Find countries where the average successful payment amount is above 50.",
+    "gold_sql": "SELECT u.country FROM users u JOIN payments p ON u.id = p.user_id WHERE p.payment_status = 'success' GROUP BY u.country HAVING AVG(p.amount) > 50;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_4",
+    "tier": 1,
+    "question": "Get all users from DE.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'DE';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_4",
+    "tier": 2,
+    "question": "Show the total payment amount for active subscriptions by plan.",
+    "gold_sql": "SELECT s.plan, COALESCE(SUM(p.amount), 0) FROM subscriptions s JOIN payments p ON s.id = p.subscription_id WHERE s.status = 'active' AND p.payment_status = 'success' GROUP BY s.plan;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_4",
+    "tier": 3,
+    "question": "What is the most common event type for users with an Enterprise plan?",
+    "gold_sql": "SELECT e.event_type, COUNT(*) as cnt FROM events e JOIN subscriptions s ON e.user_id = s.user_id WHERE s.plan = 'Enterprise' GROUP BY e.event_type ORDER BY cnt DESC LIMIT 1;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_5",
+    "tier": 1,
+    "question": "Get all users from FR.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'FR';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_5",
+    "tier": 2,
+    "question": "Count the number of login events per user.",
+    "gold_sql": "SELECT user_id, COUNT(*) FROM events WHERE event_type = 'login' GROUP BY user_id;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_5",
+    "tier": 3,
+    "question": "List the users who have never made a successful payment.",
+    "gold_sql": "SELECT u.full_name FROM users u LEFT JOIN payments p ON u.id = p.user_id AND p.payment_status = 'success' WHERE p.id IS NULL;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_6",
+    "tier": 1,
+    "question": "Get all users from JP.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'JP';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_6",
+    "tier": 2,
+    "question": "What is the average payment amount for the Enterprise plan?",
+    "gold_sql": "SELECT COALESCE(AVG(p.amount), 0) FROM payments p JOIN subscriptions s ON p.subscription_id = s.id WHERE s.plan = 'Enterprise';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_6",
+    "tier": 3,
+    "question": "Find the user with the most events logged.",
+    "gold_sql": "SELECT u.full_name, COUNT(e.id) as event_count FROM users u JOIN events e ON u.id = e.user_id GROUP BY u.id, u.full_name ORDER BY event_count DESC LIMIT 1;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_7",
+    "tier": 1,
+    "question": "Get all users from IN.",
+    "gold_sql": "SELECT * FROM users WHERE country = 'IN';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_7",
+    "tier": 2,
+    "question": "List users who created an account in 2025.",
+    "gold_sql": "SELECT full_name FROM users WHERE EXTRACT(YEAR FROM created_at) = 2025;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_7",
+    "tier": 3,
+    "question": "Show the percentage of active subscriptions by plan.",
+    "gold_sql": "WITH TotalActive AS (SELECT COUNT(*) as total FROM subscriptions WHERE status = 'active') SELECT s.plan, COUNT(*)*100.0/COALESCE((SELECT NULLIF(total, 0) FROM TotalActive LIMIT 1), 1) as percentage FROM subscriptions s WHERE s.status = 'active' GROUP BY s.plan;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_8",
+    "tier": 1,
+    "question": "List all Basic plan subscriptions.",
+    "gold_sql": "SELECT * FROM subscriptions WHERE plan = 'Basic';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_8",
+    "tier": 2,
+    "question": "How many payments failed per currency?",
+    "gold_sql": "SELECT currency, COUNT(*) FROM payments WHERE payment_status = 'failed' GROUP BY currency;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_8",
+    "tier": 3,
+    "question": "Identify users who upgraded their plan (had a Basic then Pro).",
+    "gold_sql": "WITH SubCounts AS (SELECT user_id, COUNT(DISTINCT plan) as p_count FROM subscriptions GROUP BY user_id HAVING COUNT(DISTINCT plan) > 1) SELECT u.full_name FROM users u JOIN SubCounts sc ON u.id = sc.user_id;",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t1_9",
+    "tier": 1,
+    "question": "List all Pro plan subscriptions.",
+    "gold_sql": "SELECT * FROM subscriptions WHERE plan = 'Pro';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t2_9",
+    "tier": 2,
+    "question": "Get the names of users from the UK who have an active subscription.",
+    "gold_sql": "SELECT u.full_name FROM users u JOIN subscriptions s ON u.id = s.user_id WHERE u.country = 'UK' AND s.status = 'active';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  },
+  {
+    "example_id": "train_t3_9",
+    "tier": 3,
+    "question": "Find the total revenue generated from US users in the last year.",
+    "gold_sql": "SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN users u ON p.user_id = u.id WHERE u.country = 'US' AND p.payment_status = 'success' AND p.paid_at >= CURRENT_DATE - INTERVAL '1 year';",
+    "schema_signature": "users(id, full_name, email, country, created_at) events(id, user_id, event_type, event_time, metadata) subscriptions(id, user_id, plan, status, started_at, ended_at) payments(id, user_id, subscription_id, amount, currency, payment_status, paid_at)"
+  }
+]

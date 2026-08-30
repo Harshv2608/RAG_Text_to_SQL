@@ -1,0 +1,32 @@
+{
+  "Find users in India": [
+    {
+      "parsed": {
+        "sql": "DROP TABLE users;"
+      },
+      "in_tokens": 100,
+      "out_tokens": 15
+    },
+    {
+      "parsed": {
+        "sql": "SELEC * FROM users WHERE country = 'IN';"
+      },
+      "in_tokens": 120,
+      "out_tokens": 20
+    },
+    {
+      "parsed": {
+        "sql": "SELECT * FROM users WHERE country = 'IN';"
+      },
+      "in_tokens": 140,
+      "out_tokens": 20
+    }
+  ],
+  "What is the average transaction value?": {
+    "parsed": {
+      "sql": "SELECT AVG(amount) FROM transactions;"
+    },
+    "in_tokens": 100,
+    "out_tokens": 20
+  }
+}
