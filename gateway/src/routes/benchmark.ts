@@ -1,73 +1,84 @@
 import { Router, Request, Response } from 'express';
-import { sqlExecutionQueue } from '../queue/queue';
+import { db, getAllConditions, getManifest } from '../db';
 
 const router = Router();
 
 router.get('/summary', async (req: Request, res: Response): Promise<void> => {
   try {
-    const jobs = await sqlExecutionQueue.getJobs(['completed', 'failed']);
+    const manifest = getManifest();
     
-    // Structure: aggregations[tier][rag_enabled]
-    const aggregations: any = {
-      1: { true: { count: 0, retries: 0, tokens: 0, latency: 0, success: 0 }, false: { count: 0, retries: 0, tokens: 0, latency: 0, success: 0 } },
-      2: { true: { count: 0, retries: 0, tokens: 0, latency: 0, success: 0 }, false: { count: 0, retries: 0, tokens: 0, latency: 0, success: 0 } },
-      3: { true: { count: 0, retries: 0, tokens: 0, latency: 0, success: 0 }, false: { count: 0, retries: 0, tokens: 0, latency: 0, success: 0 } }
-    };
+    // Natively aggregate using SQLite!
+    // We only aggregate stats for conditions that actually successfully executed a model generation (completed or model_failed)
+    const sql = `
+      SELECT 
+        tier,
+        rag_enabled,
+        COUNT(id) as count,
+        SUM(CASE WHEN state = 'completed' THEN 1 ELSE 0 END) as success_count,
+        SUM(CASE WHEN state = 'model_failed' THEN 1 ELSE 0 END) as model_fail_count,
+        SUM(CASE WHEN state = 'infrastructure_failed' THEN 1 ELSE 0 END) as infra_fail_count,
+        SUM(CASE WHEN state = 'quota_interrupted' THEN 1 ELSE 0 END) as quota_fail_count,
+        SUM(total_tokens) as total_tokens,
+        SUM(retries) as total_retries,
+        SUM(latency_ms) as total_latency,
+        SUM(api_requests_consumed) as total_api_requests
+      FROM benchmark_conditions
+      WHERE state IN ('completed', 'model_failed', 'infrastructure_failed', 'quota_interrupted')
+      GROUP BY tier, rag_enabled
+      ORDER BY tier, rag_enabled
+    `;
+    const rows = db.prepare(sql).all() as any[];
 
-    jobs.forEach(job => {
-      // Ensure it's an evaluation job
-      if (!job.id || !job.id.startsWith('eval_')) return;
-      
-      const tierMatch = job.id.match(/_tier(\d+)_/);
-      const ragMatch = job.id.match(/_rag([01])$/);
-      
-      if (!tierMatch || !ragMatch) return;
-      
-      const tier = parseInt(tierMatch[1]);
-      const ragEnabled = ragMatch[1] === '1';
-      
-      const agg = aggregations[tier]?.[ragEnabled ? 'true' : 'false'];
-      if (!agg) return;
+    const summaryData = [1, 2, 3].map(tier => {
+      const formatMetrics = (rag: number) => {
+        const row = rows.find(r => r.tier === tier && r.rag_enabled === rag);
+        if (!row) return { meanRetries: 0, meanTokens: 0, meanLatency: 0, successRate: 0, infraFailureRate: 0, count: 0, apiRequests: 0 };
+        
+        const validModelCount = row.success_count + row.model_fail_count;
+        return {
+          meanRetries: validModelCount > 0 ? row.total_retries / validModelCount : 0,
+          meanTokens: validModelCount > 0 ? row.total_tokens / validModelCount : 0,
+          meanLatency: validModelCount > 0 ? row.total_latency / validModelCount : 0,
+          successRate: validModelCount > 0 ? row.success_count / validModelCount : 0,
+          infraFailureRate: row.count > 0 ? row.infra_fail_count / row.count : 0,
+          quotaInterruptedRate: row.count > 0 ? row.quota_fail_count / row.count : 0,
+          count: row.count,
+          apiRequests: row.total_api_requests || 0
+        };
+      };
 
-      agg.count++;
-      
-      if (job.returnvalue) {
-        agg.success += job.returnvalue.success ? 1 : 0;
-        agg.retries += job.returnvalue.retries || 0;
-        agg.tokens += job.returnvalue.total_tokens || 0;
-        agg.latency += job.returnvalue.latency_ms || 0;
-        agg.modelCount = (agg.modelCount || 0) + 1;
-      } else {
-        agg.infraFailures = (agg.infraFailures || 0) + 1;
-      }
+      return {
+        tier: `Tier ${tier}`,
+        'RAG OFF': formatMetrics(0),
+        'RAG ON': formatMetrics(1)
+      };
     });
 
-    const formatMetrics = (tier: number, rag: boolean) => {
-      const a = aggregations[tier][rag ? 'true' : 'false'];
-      if (a.count === 0) return { meanRetries: 0, meanTokens: 0, meanLatency: 0, successRate: 0, infraFailureRate: 0, count: 0 };
-      
-      const modelCount = a.modelCount || 0;
-      const infraFailures = a.infraFailures || 0;
-      
-      return {
-        meanRetries: modelCount > 0 ? a.retries / modelCount : 0,
-        meanTokens: modelCount > 0 ? a.tokens / modelCount : 0,
-        meanLatency: modelCount > 0 ? a.latency / modelCount : 0,
-        successRate: modelCount > 0 ? a.success / modelCount : 0,
-        infraFailureRate: infraFailures / a.count,
-        count: a.count
-      };
+    // Also get the raw array of condition states for the progress bar
+    const rawConditions = getAllConditions();
+    const progress = {
+      pending: rawConditions.filter((c: any) => c.state === 'pending').length,
+      running: rawConditions.filter((c: any) => c.state === 'running').length,
+      completed: rawConditions.filter((c: any) => c.state === 'completed').length,
+      model_failed: rawConditions.filter((c: any) => c.state === 'model_failed').length,
+      infrastructure_failed: rawConditions.filter((c: any) => c.state === 'infrastructure_failed').length,
+      quota_interrupted: rawConditions.filter((c: any) => c.state === 'quota_interrupted').length,
+      total: rawConditions.length,
+      api_requests: rows.reduce((acc, row) => acc + (row.total_api_requests || 0), 0)
     };
 
-    const summaryData = [1, 2, 3].map(tier => ({
-      tier: `Tier ${tier}`,
-      'RAG OFF': formatMetrics(tier, false),
-      'RAG ON': formatMetrics(tier, true)
-    }));
-
-    res.json({ summary: summaryData });
+    res.json({ manifest, progress, summary: summaryData });
   } catch (e: any) {
     res.status(500).json({ error: e.message || 'Error fetching metrics' });
+  }
+});
+
+router.get('/conditions', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rawConditions = getAllConditions();
+    res.json({ conditions: rawConditions });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message || 'Error fetching conditions' });
   }
 });
 

@@ -16,9 +16,7 @@ class MockLLM(LLMProvider):
         
     def generate_sql(self, prompt: str, system_instruction: str) -> Tuple[Dict[str, Any], int, int]:
         self.call_count += 1
-        if self.call_count == 1:
-            return ({"sql": "DROP TABLE users; SELECT * FROM users;"}, 50, 20)
-        elif self.call_count == 2:
+        if self.call_count % 2 != 0:
             return ({"sql": "SELEC * FRM users;"}, 60, 20)
         return ({"sql": "SELECT * FROM users;"}, 70, 20)
 
@@ -64,8 +62,8 @@ class ReplayLLM(LLMProvider):
 class GeminiLLM(LLMProvider):
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY", "")
-        self.primary_model = os.getenv("GEMINI_PRIMARY_MODEL", "gemini-1.5-pro")
-        self.fallback_model = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-1.5-flash")
+        self.primary_model = os.getenv("GEMINI_PRIMARY_MODEL", "gemini-3.5-flash")
+        self.fallback_model = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash")
         
         # Only initialize real client if not strictly mocked
         if self.api_key and os.getenv("LLM_PROVIDER") != "mock":

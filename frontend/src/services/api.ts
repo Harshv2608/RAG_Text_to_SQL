@@ -39,3 +39,8 @@ export const getBenchmarkSummary = async () => {
   const res = await api.get('/benchmark/summary');
   return res.data;
 };
+
+export const getConditions = async () => {
+  const res = await api.get('/benchmark/conditions');
+  return res.data;
+};

@@ -160,6 +160,13 @@ export const LiveRunner = () => {
               </div>
             </div>
             
+            {result.error && (
+              <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+                <h4 className="font-bold mb-1">Infrastructure Error</h4>
+                <p className="text-sm font-mono">{result.error}</p>
+              </div>
+            )}
+            
             {result.data && result.data.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-slate-300">

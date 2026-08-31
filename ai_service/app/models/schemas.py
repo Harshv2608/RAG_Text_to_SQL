@@ -25,5 +25,7 @@ class SQLGenerationResponse(BaseModel):
     final_sql: Optional[str] = None
     data: Optional[List[Dict[str, Any]]] = None
     retries: int
+    api_requests_count: int
     total_tokens: int
+    latency_ms: float
     logs: List[ExecutionLog]

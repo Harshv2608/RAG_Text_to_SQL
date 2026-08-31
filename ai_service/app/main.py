@@ -47,6 +47,8 @@ def generate_query(request: SQLGenerationRequest):
         final_sql=final_sql,
         data=final_data,
         retries=retry_count,
+        api_requests_count=attempt_count,
         total_tokens=total_tokens,
+        latency_ms=latency_ms,
         logs=logs
     )
