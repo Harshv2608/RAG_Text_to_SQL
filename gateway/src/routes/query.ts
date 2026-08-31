@@ -28,7 +28,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
 router.get('/:jobId/status', async (req: Request, res: Response): Promise<void> => {
   try {
-    const job = await sqlExecutionQueue.getJob(req.params.jobId);
+    const jobId = req.params.jobId as string;
+    const job = await sqlExecutionQueue.getJob(jobId);
     if (!job) {
       res.status(404).json({ error: 'Job not found' });
       return;

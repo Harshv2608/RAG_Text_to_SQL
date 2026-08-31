@@ -10,7 +10,7 @@ router.get('/', async (req: Request, res: Response) => {
   let aiServiceStatus = 'down';
   
   try {
-    const client = await sqlExecutionQueue.client;
+    const client = await (sqlExecutionQueue as any).client;
     if (client.status === 'ready') {
       redisStatus = 'up';
     } else {
