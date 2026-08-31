@@ -178,7 +178,7 @@ export const EvalDashboard = () => {
                     <td className="px-4 py-3 font-mono">{Math.round(on.meanLatency)}</td>
                     <td className="px-4 py-3 font-mono text-indigo-400">{on.apiRequests}</td>
                   </tr>
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </tbody>

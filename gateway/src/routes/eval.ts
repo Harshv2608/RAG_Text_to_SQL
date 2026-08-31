@@ -75,9 +75,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Deterministically shuffle the active group
+    // Deterministically shuffle the active group and pick only 1
     const seed = parseInt(datasetSha.substring(0, 8), 16) + tier + requestedRagVal;
-    const dispatchList = deterministicShuffle([...activeGroup], seed);
+    const dispatchList = deterministicShuffle([...activeGroup], seed).slice(0, 1);
 
     const dispatchJobs = dispatchList.map(j => ({
       name: `eval-job-${j.question_id}`,
