@@ -6,38 +6,98 @@ services:
     container_name: insightsql_postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: insightsql
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d insightsql"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
-    image: redis:7-alpine
+    image: redis:alpine
     container_name: insightsql_redis
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+      - redisdata:/data
 
-  chroma:
-    image: chromadb/chroma:0.4.22
-    container_name: insightsql_chromadb
+  ai_service:
+    build:
+      context: ./ai_service
+    container_name: insightsql_ai_service
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
     environment:
-      - IS_PERSISTENT=TRUE
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/insightsql
+      - LLM_PROVIDER=google
+      # Will read GOOGLE_API_KEY from host environment or .env
+    env_file:
+      - .env
+    volumes:
+      - ./ai_service:/app
+      - ./benchmark:/benchmark
+    # In docker, PYTHONPATH usually needs to point to the root for absolute imports
+    # or the app handles it.
+
+  gateway:
+    build:
+      context: ./gateway
+    container_name: insightsql_gateway
+    depends_on:
+      - redis
+      - ai_service
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AI_SERVICE_URL=http://ai_service:8000
+    env_file:
+      - .env
+    volumes:
+      - ./gateway:/app
+      - ./benchmark:/benchmark
+    command: ["npx", "tsx", "src/index.ts"]
+
+  worker:
+    build:
+      context: ./gateway
+    container_name: insightsql_worker
+    depends_on:
+      - redis
+      - ai_service
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AI_SERVICE_URL=http://ai_service:8000
+    env_file:
+      - .env
+    volumes:
+      - ./gateway:/app
+      - ./benchmark:/benchmark
+    command: ["npx", "tsx", "src/queue/worker.ts"]
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: insightsql_frontend
+    depends_on:
+      - gateway
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 volumes:
-  postgres_data:
-  redis_data:
-  chroma_data:
+  pgdata:
+  redisdata:
