@@ -26,15 +26,18 @@ export const EvalDashboard = () => {
     return () => clearInterval(interval);
   }, [showConditions]);
 
-  const handleRunBatch = async () => {
-    setRunning(true);
+  const [runningType, setRunningType] = useState<string | null>(null);
+
+  const handleRunBatch = async (tier: number, rag: boolean) => {
+    const runKey = `${tier}-${rag}`;
+    setRunningType(runKey);
     try {
-      const res = await submitEvalBatch([]);
+      const res = await submitEvalBatch(tier, rag);
       alert(res.message);
-    } catch (e) {
-      alert("Failed to submit batch");
+    } catch (e: any) {
+      alert(e.response?.data?.error || "Failed to submit batch");
     }
-    setTimeout(() => setRunning(false), 2000);
+    setTimeout(() => setRunningType(null), 1000);
   };
 
   if (!data) return <div className="p-6 text-white">Loading...</div>;
@@ -43,8 +46,8 @@ export const EvalDashboard = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-      <div className="flex justify-between items-center glass-panel p-6">
-        <div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center glass-panel p-6">
+        <div className="mb-4 md:mb-0">
           <h2 className="text-xl font-semibold text-white">Research Dashboard</h2>
           <p className="text-slate-400 text-sm mt-1">Goal: Does RAG improve Text-to-SQL performance across query difficulty?</p>
           {manifest && (
@@ -54,14 +57,32 @@ export const EvalDashboard = () => {
             </div>
           )}
         </div>
-        <button
-          onClick={handleRunBatch}
-          disabled={running}
-          className="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
-        >
-          <Play className="w-5 h-5" />
-          {running ? 'Dispatching...' : 'Dispatch Batch'}
-        </button>
+        
+        <div className="flex gap-4 p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
+          {[1, 2, 3].map(tier => (
+            <div key={tier} className="flex flex-col gap-2 border-r border-slate-700/50 last:border-0 pr-4 last:pr-0">
+              <span className="text-xs text-slate-400 font-medium uppercase text-center mb-1">Tier {tier}</span>
+              <button
+                onClick={() => handleRunBatch(tier, false)}
+                disabled={runningType !== null}
+                className={cn("py-1.5 px-3 rounded text-xs font-medium transition-all shadow border flex items-center justify-center gap-1",
+                  runningType === `${tier}-false` ? "bg-slate-700 text-slate-400 border-slate-600" 
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-600")}
+              >
+                {runningType === `${tier}-false` ? '...' : <><Play className="w-3 h-3" /> RAG OFF</>}
+              </button>
+              <button
+                onClick={() => handleRunBatch(tier, true)}
+                disabled={runningType !== null}
+                className={cn("py-1.5 px-3 rounded text-xs font-medium transition-all shadow flex items-center justify-center gap-1",
+                  runningType === `${tier}-true` ? "bg-slate-700 text-slate-400" 
+                  : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20")}
+              >
+                {runningType === `${tier}-true` ? '...' : <><Play className="w-3 h-3" /> RAG ON</>}
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {(progress?.completed + progress?.model_failed) === 60 ? (

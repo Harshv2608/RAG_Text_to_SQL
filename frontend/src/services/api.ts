@@ -15,6 +15,11 @@ export const checkHealth = async () => {
   return res.data;
 };
 
+export const submitEvalBatch = async (tier: number, rag: boolean) => {
+  const res = await api.post('/eval', { tier, rag });
+  return res.data;
+};
+
 export const submitQuery = async (payload: { question: string, tier: 1|2|3, rag_enabled: boolean }) => {
   const res = await api.post('/query', payload);
   return res.data;
@@ -22,11 +27,6 @@ export const submitQuery = async (payload: { question: string, tier: 1|2|3, rag_
 
 export const checkQueryStatus = async (jobId: string) => {
   const res = await api.get(`/query/${jobId}/status`);
-  return res.data;
-};
-
-export const submitEvalBatch = async (payload: { question: string, tier: 1|2|3, rag_enabled: boolean, question_id: string }[]) => {
-  const res = await api.post('/eval', payload);
   return res.data;
 };
 

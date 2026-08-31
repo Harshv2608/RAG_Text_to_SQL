@@ -22,6 +22,13 @@ function deterministicShuffle(array: any[], seed: number) {
 
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    const { tier, rag } = req.body;
+    
+    if (typeof tier !== 'number' || typeof rag !== 'boolean') {
+      res.status(400).json({ error: 'Missing or invalid tier/rag parameters' });
+      return;
+    }
+
     const benchmarkPath = path.resolve(__dirname, '../../../benchmark/test_benchmark.json');
     const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8'));
 
@@ -53,29 +60,17 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Determine the lowest active question index
-    let lowestIndex = 999;
-    pending.forEach(p => {
-      const match = p.question_id.match(/_(\d+)$/);
-      if (match) {
-        const idx = parseInt(match[1], 10);
-        if (idx < lowestIndex) lowestIndex = idx;
-      }
-    });
+    // Filter pending conditions that belong to the requested tier and rag state
+    const requestedRagVal = rag ? 1 : 0;
+    const activeGroup = pending.filter(p => p.tier === tier && p.rag_enabled === requestedRagVal);
 
-    if (lowestIndex === 999) {
-      res.status(500).json({ error: 'Could not determine question group index' });
+    if (activeGroup.length === 0) {
+      res.status(200).json({ message: `No pending conditions found for Tier ${tier} RAG ${rag ? 'ON' : 'OFF'}.`, jobIds: [] });
       return;
     }
 
-    // Filter pending conditions that belong to the lowest active question index
-    const activeGroup = pending.filter(p => {
-      const match = p.question_id.match(/_(\d+)$/);
-      return match && parseInt(match[1], 10) === lowestIndex;
-    });
-
-    // Deterministically shuffle the active group based on its index and the dataset sha
-    const seed = parseInt(datasetSha.substring(0, 8), 16) + lowestIndex;
+    // Deterministically shuffle the active group
+    const seed = parseInt(datasetSha.substring(0, 8), 16) + tier + requestedRagVal;
     const dispatchList = deterministicShuffle([...activeGroup], seed);
 
     const dispatchJobs = dispatchList.map(j => ({
@@ -104,7 +99,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     const jobIds = addedJobs.map(j => j.id);
     
     res.status(202).json({ 
-      message: `Dispatched Question Group ${lowestIndex} (${dispatchJobs.length} conditions).`, 
+      message: `Dispatched ${dispatchJobs.length} conditions for Tier ${tier} RAG ${rag ? 'ON' : 'OFF'}.`, 
       jobIds,
       remaining_pending: pending.length - dispatchJobs.length
     });
