@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { getBenchmarkSummary, submitEvalBatch, getConditions } from '../services/api';
 import { Play, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../components/Layout';
@@ -153,7 +153,7 @@ export const EvalDashboard = () => {
               const deltaColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-red-400' : 'text-slate-400';
 
               return (
-                <React.Fragment key={i}>
+                <Fragment key={i}>
                   <tr className="border-t border-slate-700/50">
                     <td className="px-4 py-3 font-semibold text-white" rowSpan={2}>{row.tier}</td>
                     <td className="px-4 py-3">OFF</td>
