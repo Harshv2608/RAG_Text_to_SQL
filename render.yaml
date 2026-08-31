@@ -1,11 +1,11 @@
-services:
+databases:
   # 1. Managed PostgreSQL Database
-  - type: pgo
-    name: insightsql_postgres
+  - name: insightsql_postgres
     databaseName: insightsql
     user: postgres
     plan: starter # Starter plan required for long-running prod DBs
 
+services:
   # 2. Managed Redis
   - type: redis
     name: insightsql_redis
