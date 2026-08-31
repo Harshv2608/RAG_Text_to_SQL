@@ -2,7 +2,6 @@ databases:
   # 1. Managed PostgreSQL Database
   - name: insightsql_postgres
     databaseName: insightsql
-    user: postgres
     plan: starter # Starter plan required for long-running prod DBs
 
 services:
@@ -10,6 +9,7 @@ services:
   - type: redis
     name: insightsql_redis
     plan: free
+    ipAllowList: []
 
   # 3. AI Service (Python FastAPI)
   - type: web
