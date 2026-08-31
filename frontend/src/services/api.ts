@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Ensure this matches the gateway port
-const GATEWAY_URL = 'http://localhost:3000';
+// Ensure this matches the gateway port or deployment URL
+const GATEWAY_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const api = axios.create({
   baseURL: GATEWAY_URL,
@@ -10,13 +10,26 @@ export const api = axios.create({
   }
 });
 
+let cachedAdminKey: string | null = null;
+
 export const checkHealth = async () => {
   const res = await api.get('/health');
   return res.data;
 };
 
 export const submitEvalBatch = async (tier: number, rag: boolean) => {
-  const res = await api.post('/eval', { tier, rag });
+  if (!cachedAdminKey) {
+    cachedAdminKey = prompt("Please enter the Admin API Key to dispatch jobs:");
+    if (!cachedAdminKey) {
+      throw new Error("Admin API Key is required to dispatch jobs.");
+    }
+  }
+
+  const res = await api.post('/eval', { tier, rag }, {
+    headers: {
+      'x-admin-key': cachedAdminKey
+    }
+  });
   return res.data;
 };
 

@@ -22,6 +22,12 @@ function deterministicShuffle(array: any[], seed: number) {
 
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    const adminKey = process.env.ADMIN_API_KEY;
+    if (adminKey && req.headers['x-admin-key'] !== adminKey) {
+      res.status(401).json({ error: 'Unauthorized. Invalid Admin API Key.' });
+      return;
+    }
+
     const { tier, rag } = req.body;
     
     if (typeof tier !== 'number' || typeof rag !== 'boolean') {

@@ -1,0 +1,71 @@
+services:
+  # 1. Managed PostgreSQL Database
+  - type: pgo
+    name: insightsql_postgres
+    databaseName: insightsql
+    user: postgres
+    plan: starter # Starter plan required for long-running prod DBs
+
+  # 2. Managed Redis
+  - type: redis
+    name: insightsql_redis
+    plan: free
+
+  # 3. AI Service (Python FastAPI)
+  - type: web
+    name: insightsql_ai_service
+    env: python
+    buildCommand: "cd ai_service && pip install -r requirements.txt"
+    startCommand: "cd ai_service && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: insightsql_postgres
+          property: connectionString
+      - key: LLM_PROVIDER
+        value: google
+      - key: GOOGLE_API_KEY
+        sync: false # You must provide this in the Render dashboard
+
+  # 4. Gateway (Node.js API)
+  - type: web
+    name: insightsql_gateway
+    env: node
+    buildCommand: "cd gateway && npm install"
+    startCommand: "cd gateway && npx tsx src/index.ts"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: insightsql_postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: insightsql_redis
+          property: connectionString
+      - key: AI_SERVICE_URL
+        # Internal URL of the AI Service web service
+        value: http://insightsql_ai_service:10000
+      - key: ADMIN_API_KEY
+        generateValue: true
+
+  # 5. BullMQ Worker (Background service)
+  - type: worker
+    name: insightsql_worker
+    env: node
+    buildCommand: "cd gateway && npm install"
+    startCommand: "cd gateway && npx tsx src/queue/worker.ts"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: insightsql_postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: insightsql_redis
+          property: connectionString
+      - key: AI_SERVICE_URL
+        value: http://insightsql_ai_service:10000
+      - key: DAILY_BUDGET
+        value: "20"
