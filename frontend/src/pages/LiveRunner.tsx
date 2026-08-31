@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { submitQuery, checkQueryStatus } from '../services/api';
 import { Loader2, Play, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '../components/Layout';

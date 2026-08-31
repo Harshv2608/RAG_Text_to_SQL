@@ -18,16 +18,9 @@ export const checkHealth = async () => {
 };
 
 export const submitEvalBatch = async (tier: number, rag: boolean) => {
-  if (!cachedAdminKey) {
-    cachedAdminKey = prompt("Please enter the Admin API Key to dispatch jobs:");
-    if (!cachedAdminKey) {
-      throw new Error("Admin API Key is required to dispatch jobs.");
-    }
-  }
-
   const res = await api.post('/eval', { tier, rag }, {
     headers: {
-      'x-admin-key': cachedAdminKey
+      'x-admin-key': cachedAdminKey || ''
     }
   });
   return res.data;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { checkHealth } from '../services/api';
 import { Database, LayoutDashboard, Terminal } from 'lucide-react';

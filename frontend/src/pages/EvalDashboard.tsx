@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getBenchmarkSummary, submitEvalBatch, getConditions } from '../services/api';
 import { Play, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../components/Layout';
@@ -6,7 +6,6 @@ import { cn } from '../components/Layout';
 export const EvalDashboard = () => {
   const [data, setData] = useState<any>(null);
   const [conditions, setConditions] = useState<any[]>([]);
-  const [running, setRunning] = useState(false);
   const [showConditions, setShowConditions] = useState(false);
 
   useEffect(() => {
