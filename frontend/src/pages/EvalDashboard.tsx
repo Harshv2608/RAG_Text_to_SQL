@@ -80,9 +80,9 @@ export const EvalDashboard = () => {
         <h3 className="text-lg font-medium text-white mb-4">Experiment Progress ({progress?.completed + progress?.model_failed} / 60)</h3>
         
         <div className="w-full bg-slate-900 rounded-full h-4 mb-4 overflow-hidden flex">
-          <div className="bg-emerald-500 h-4 transition-all duration-500" style={{ width: \`\${(progress?.completed / 60) * 100}%\` }}></div>
-          <div className="bg-red-500 h-4 transition-all duration-500" style={{ width: \`\${(progress?.model_failed / 60) * 100}%\` }}></div>
-          <div className="bg-yellow-500 h-4 transition-all duration-500" style={{ width: \`\${(progress?.quota_interrupted / 60) * 100}%\` }}></div>
+          <div className="bg-emerald-500 h-4 transition-all duration-500" style={{ width: `${(progress?.completed / 60) * 100}%` }}></div>
+          <div className="bg-red-500 h-4 transition-all duration-500" style={{ width: `${(progress?.model_failed / 60) * 100}%` }}></div>
+          <div className="bg-yellow-500 h-4 transition-all duration-500" style={{ width: `${(progress?.quota_interrupted / 60) * 100}%` }}></div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
