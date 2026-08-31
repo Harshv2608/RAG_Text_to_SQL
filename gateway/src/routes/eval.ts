@@ -9,7 +9,9 @@ const router = Router();
 
 // Deterministic shuffle using a simple LCG
 function deterministicShuffle(array: any[], seed: number) {
-  let m = array.length, t, i;
+  let m: number = array.length;
+  let t: any;
+  let i: number;
   while (m) {
     seed = (seed * 9301 + 49297) % 233280;
     i = Math.floor((seed / 233280) * m--);
