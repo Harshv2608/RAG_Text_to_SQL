@@ -7,13 +7,13 @@ RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/li
 
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --default-timeout=100 --no-cache-dir -r requirements.txt
 
 # Create necessary directories
 RUN mkdir -p /ai_service/data
 
 COPY . .
 
-ENV PYTHONPATH=/
+ENV PYTHONPATH=/ai_service
 
-CMD ["uvicorn", "ai_service.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

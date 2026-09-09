@@ -27,6 +27,7 @@ services:
   ai_service:
     build:
       context: ./ai_service
+      network: host
     container_name: insightsql_ai_service
     depends_on:
       postgres:
@@ -43,6 +44,8 @@ services:
       - ./ai_service:/ai_service
       - ./benchmark:/benchmark
     # In docker, PYTHONPATH usually needs to point to the root for absolute imports
+    dns:
+      - 8.8.8.8
     # or the app handles it.
 
   gateway:
