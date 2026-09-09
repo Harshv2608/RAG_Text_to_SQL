@@ -8,4 +8,6 @@ google-genai>=0.1.0
 python-dotenv>=1.0.0
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
-chromadb>=0.4.22
+chromadb==0.4.24
+flatbuffers
+onnxruntime==1.17.1
