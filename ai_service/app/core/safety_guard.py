@@ -1,5 +1,5 @@
 import re
-from ai_service.app.models.schemas import GuardResult
+from app.models.schemas import GuardResult
 
 DESTRUCTIVE_KEYWORDS = {"DROP", "DELETE", "UPDATE", "ALTER", "INSERT", "ATTACH", "TRUNCATE"}
 

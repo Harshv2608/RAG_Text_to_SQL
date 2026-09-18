@@ -1,10 +1,10 @@
 import os
 from fastapi import FastAPI
-from ai_service.app.models.schemas import SQLGenerationRequest, SQLGenerationResponse
-from ai_service.app.core.llm_provider import get_llm_provider
-from ai_service.app.core.orchestrator import SQLOrchestrator
-from ai_service.app.db.postgres import PostgresExecutor
-from ai_service.app.db.chroma_client import ChromaClient
+from app.models.schemas import SQLGenerationRequest, SQLGenerationResponse
+from app.core.llm_provider import get_llm_provider
+from app.core.orchestrator import SQLOrchestrator
+from app.db.postgres import PostgresExecutor
+from app.db.chroma_client import ChromaClient
 from dotenv import load_dotenv
 
 load_dotenv()

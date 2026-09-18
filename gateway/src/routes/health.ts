@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
-import { sqlExecutionQueue } from '../queue/queue';
+import { sqlExecutionQueue, connection } from '../queue/queue';
 
 const router = Router();
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000';
@@ -10,11 +10,10 @@ router.get('/', async (req: Request, res: Response) => {
   let aiServiceStatus = 'down';
   
   try {
-    const client = await (sqlExecutionQueue as any).client;
-    if (client.status === 'ready') {
+    if (connection.status === 'ready') {
       redisStatus = 'up';
     } else {
-      await client.ping();
+      await connection.ping();
       redisStatus = 'up';
     }
   } catch (e) {}

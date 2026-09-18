@@ -1,8 +1,8 @@
 import time
 from typing import Dict, Any, Tuple, Optional, List
-from ai_service.app.core.llm_provider import LLMProvider
-from ai_service.app.core.safety_guard import check
-from ai_service.app.models.schemas import ExecutionLog
+from app.core.llm_provider import LLMProvider
+from app.core.safety_guard import check
+from app.models.schemas import ExecutionLog
 
 class SQLOrchestrator:
     def __init__(self, llm_provider: LLMProvider, db_executor: Any, chroma_client: Optional[Any] = None):

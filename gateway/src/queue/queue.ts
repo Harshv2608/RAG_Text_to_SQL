@@ -22,6 +22,6 @@ if (process.env.REDIS_URL) {
   };
 }
 
-const connection = new IORedis(process.env.REDIS_URL || redisConfig);
+export const connection = new IORedis(process.env.REDIS_URL || redisConfig);
 
 export const sqlExecutionQueue = new Queue('sql-execution-queue', { connection });
