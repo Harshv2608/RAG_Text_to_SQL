@@ -5,6 +5,7 @@ import evalRouter from './routes/eval';
 import healthRouter from './routes/health';
 import metricsRouter from './routes/metrics';
 import benchmarkRouter from './routes/benchmark';
+import datasetRouter from './routes/dataset';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use('/eval', evalRouter);
 app.use('/health', healthRouter);
 app.use('/metrics', metricsRouter);
 app.use('/benchmark', benchmarkRouter);
+app.use('/dataset', datasetRouter);
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;

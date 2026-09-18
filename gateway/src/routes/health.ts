@@ -19,8 +19,8 @@ router.get('/', async (req: Request, res: Response) => {
   } catch (e) {}
   
   try {
-    // Check python backend health (assuming a generic root or health endpoint, here we just catch any response or connection)
-    await axios.get(`${AI_SERVICE_URL}/`, { timeout: 2000 });
+    // Check python backend health using the correct /health endpoint
+    await axios.get(`${AI_SERVICE_URL}/health`, { timeout: 2000 });
     aiServiceStatus = 'up';
   } catch (e: any) {
     if (e.response) {

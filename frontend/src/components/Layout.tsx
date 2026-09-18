@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { checkHealth } from '../services/api';
-import { Database, LayoutDashboard, Terminal } from 'lucide-react';
+import { Database, LayoutDashboard, Terminal, Table } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -49,6 +49,9 @@ export const Layout = () => {
                 </Link>
                 <Link to="/eval" className={cn("inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors", location.pathname === '/eval' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-300 hover:bg-slate-700/50 hover:text-white")}>
                   <LayoutDashboard className="w-4 h-4 mr-2" /> Eval Dashboard
+                </Link>
+                <Link to="/dataset" className={cn("inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors", location.pathname === '/dataset' ? "bg-indigo-500/10 text-indigo-400" : "text-slate-300 hover:bg-slate-700/50 hover:text-white")}>
+                  <Table className="w-4 h-4 mr-2" /> Dataset & Schema
                 </Link>
               </div>
             </div>
