@@ -36,6 +36,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/insightsql
+      - DB_HOST=postgres
       - LLM_PROVIDER=google
       # Will read GOOGLE_API_KEY from host environment or .env
     env_file:
