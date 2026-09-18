@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const dbPath = path.resolve(__dirname, '../../benchmark_results.sqlite');
+const dbPath = process.env.DB_PATH || '/shared_data/eval.db';
 export const db = new Database(dbPath);
 
 db.exec(`

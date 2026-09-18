@@ -66,6 +66,7 @@ services:
     volumes:
       - ./gateway:/app
       - ./benchmark:/benchmark
+      - dbdata:/shared_data
     command: ["npx", "tsx", "src/index.ts"]
 
   worker:
@@ -84,6 +85,7 @@ services:
     volumes:
       - ./gateway:/app
       - ./benchmark:/benchmark
+      - dbdata:/shared_data
     command: ["npx", "tsx", "src/queue/worker.ts"]
 
   frontend:
@@ -102,3 +104,4 @@ services:
 volumes:
   pgdata:
   redisdata:
+  dbdata:
