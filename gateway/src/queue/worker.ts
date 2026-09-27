@@ -65,8 +65,8 @@ export const sqlWorker = new Worker('sql-execution-queue', async (job: Job) => {
     const errorMsg = error.response?.data?.detail || error.message || 'Execution failed';
     console.error(`Error on job ${jobId}: ${errorMsg}`);
     
-    if (errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('Quota')) {
-      console.warn(`Quota Exceeded (429) hit! Pausing queue.`);
+    if (errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('Quota') || errorMsg.includes('503') || errorMsg.includes('UNAVAILABLE')) {
+      console.warn(`Quota or Availability Exceeded hit! Pausing queue.`);
       updateConditionState(jobId, 'quota_interrupted');
       await sqlWorker.pause();
       throw new Error(`Quota Interrupted: ${errorMsg}`);

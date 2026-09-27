@@ -69,7 +69,7 @@ export function updateConditionState(id: string, state: string, result?: any) {
       WHERE id = ?
     `).run(
       state,
-      result.result_correct ? 1 : 0,
+      result.success ? 1 : 0,
       result.final_sql || null,
       result.total_tokens || 0,
       result.api_requests_count || (result.retries || 0) + 1, // Fallback if api_requests_count isn't fully piped
