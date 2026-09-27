@@ -72,8 +72,8 @@ export function updateConditionState(id: string, state: string, result?: any) {
       result.result_correct ? 1 : 0,
       result.final_sql || null,
       result.total_tokens || 0,
-      result.api_requests_count || (result.retry_count || 0) + 1, // Fallback if api_requests_count isn't fully piped
-      result.retry_count || 0,
+      result.api_requests_count || (result.retries || 0) + 1, // Fallback if api_requests_count isn't fully piped
+      result.retries || 0,
       result.latency_ms || 0.0,
       JSON.stringify(result.logs || []),
       new Date().toISOString(),
